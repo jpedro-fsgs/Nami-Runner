@@ -1,0 +1,15 @@
+{
+    "highscore": [
+        [
+            121329,
+            "JP"
+        ]
+    ],
+    "datasettings": {
+        "obstacle_start_vel": 4,
+        "obstacle_acel": 0.003,
+        "obstacle_max_vel": 16
+    },
+    "music": 1,
+    "volume": 2
+}
