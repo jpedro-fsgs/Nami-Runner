@@ -1,8 +1,9 @@
 {
     "highscore": [
         [
-            121329,
-            "JP"
+            0,
+            "",
+            1
         ]
     ],
     "datasettings": {
@@ -11,5 +12,6 @@
         "obstacle_max_vel": 16
     },
     "music": 1,
-    "volume": 2
+    "volume": 3,
+    "difficulty": 1
 }
