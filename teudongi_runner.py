@@ -429,7 +429,6 @@ while True:
             ground_cord=0
             game_active = False
             current_score = pygame.time.get_ticks() - start_time
-            current_score = 133500
             if current_score > gamedata['highscore'][0][0]:
                 player_name = simpledialog.askstring('HIGHSCORE', '\tDigite o seu nome (Até 10 caracteres)\t')
             else:
