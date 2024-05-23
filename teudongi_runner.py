@@ -198,7 +198,8 @@ def settings():
     def selectsong():
    
         global current_song, bgMusic
-        if var.get() > len(bgMusic):
+        
+        if var.get() >= len(bgMusic):
             pygame.mixer.stop()
             gamedata['music'] = len(bgMusic)
         else:
@@ -210,7 +211,7 @@ def settings():
             gamedata['music'] = var.get()
 
     def change_volume(self):
-        if var.get() > len(bgMusic): return 0
+        if var.get() >= len(bgMusic): return 0
         current_song.set_volume(slider_value.get()/10)
         gamedata["volume"] = slider_value.get()
 
@@ -287,7 +288,7 @@ def settings():
     songbutton1 = Radiobutton(framesongs, text='Street Race at Dawn', variable=var, value=0, command=selectsong)
     songbutton2 = Radiobutton(framesongs, text='Gathering the Dew', variable=var, value=1, command=selectsong)
     songbutton3 = Radiobutton(framesongs, text='Cryptic Puzzle', variable=var, value=2, command=selectsong)
-    songbutton4 = Radiobutton(framesongs, text="None", variable=var, value=6, command=selectsong)
+    songbutton4 = Radiobutton(framesongs, text="None", variable=var, value=3, command=selectsong)
 
     var.set(gamedata['music'])
 
@@ -314,8 +315,8 @@ joysticks = []
 
 screen = pygame.display.set_mode((800,400))
 pygame.display.set_caption('Teudongi Runner')
-icon = random.choice(['graphics/miney.png', 'graphics/bombie.png'])
-pygame.display.set_icon(pygame.image.load(str(Path(icon))))
+icon = pygame.image.load(str(Path(random.choice(['graphics/miney.png', 'graphics/bombie.png']))))
+pygame.display.set_icon(icon)
 clock = pygame.time.Clock()
 fonte1 = str(Path('font/Poppins-SemiBold.ttf'))
 fonte2 = str(Path('font/Poppins-Light.ttf'))
@@ -431,6 +432,7 @@ while True:
             current_score = pygame.time.get_ticks() - start_time
             if current_score > gamedata['highscore'][0][0]:
                 player_name = simpledialog.askstring('HIGHSCORE', '\tDigite o seu nome (Até 10 caracteres)\t')
+                if not player_name: player_name = ''
             else:
                 player_name = ''
             gamedata['highscore'].append([current_score, player_name, difficulty])
