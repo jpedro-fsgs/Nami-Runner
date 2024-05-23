@@ -69,7 +69,7 @@ class Obstacle(pygame.sprite.Sprite):
             snail_2 = pygame.image.load(str(Path("graphics/bombie2.png"))).convert_alpha()
             self.frames = [snail_1, snail_2]
             self.y_pos_baseline = 300
-            self.special = not bool(random.randint(0,5))
+            self.special = not bool(random.randint(0,6))
         else:
             fly_1 = pygame.image.load(str(Path('graphics/miney.png'))).convert_alpha()
             fly_2 = pygame.image.load(str(Path('graphics/miney2.png'))).convert_alpha()
@@ -334,15 +334,15 @@ setts_rect = setts.get_rect(topleft=(715, 320))
 game_active = False
 start_time = 0
 
-gamedata = {'highscore':[],
+gamedata = {'highscore':[[0, '', 1]],
             'datasettings':{
                 'obstacle_start_vel': 4,
                 'obstacle_acel': 0.003,
                 'obstacle_max_vel': 16},
             'music': 0,
+            'volume': 3,
             'difficulty': 1
             }
-
 songslist = [str(Path('audio/Street Race at Dawn.mp3')),
             str(Path('audio/Gathering the Dew.mp3')),
             str(Path('audio/Cryptic Puzzle.mp3'))]
@@ -361,7 +361,11 @@ jumps = 0
 just_start = True
 odd_enemy = 2
 
-with open('gamedata.json', 'r') as hs_file:
+if not Path('gamedata.json').exists():
+    with open('gamedata.json', 'w') as hs_file:
+                    json.dump(gamedata, hs_file, indent=4)
+
+with open(Path('gamedata.json'), 'r') as hs_file:
     gamedata = json.load(hs_file)
 
 obstacle_start_vel = gamedata['datasettings']['obstacle_start_vel']
