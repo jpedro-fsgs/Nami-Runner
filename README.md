@@ -6,7 +6,7 @@ Teudongi Runner é um jogo estilo running game desenvolvido com Pygame e Tkinter
 
 - **Suporte para Gamepad**: Jogue com conforto usando seu gamepad preferido.
 - **Nível de Dificuldade**: 3 níveis de dificuldade selecionáveis: Easy, Normal, Hard.
-- **Registro de Highscores**: Registre suas melhores pontuações com seu nome.
+- **Registro de Highscores**: Registre suas melhores pontuações por nível de dificuldade.
 - **Trilha Sonora**: Escolha entre três músicas autorais para ouvir enquanto joga.
 
 ## Screenshots

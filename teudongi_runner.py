@@ -11,16 +11,17 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         
-        layer_walk_1 = pygame.image.load(str(Path("graphics/passo1.png"))).convert_alpha()
-        layer_walk_2 = pygame.image.load(str(Path("graphics/passo2.png"))).convert_alpha()
+        self.stand = pygame.image.load(str(Path("graphics/nami_stand.png"))).convert_alpha()
+        layer_walk_1 = pygame.image.load(str(Path("graphics/nami_passo1.png"))).convert_alpha()
+        layer_walk_2 = pygame.image.load(str(Path("graphics/nami_passo2.png"))).convert_alpha()
         self.walk = [layer_walk_1, layer_walk_2]
         self.index = 0
         
         self.image = self.walk[self.index]
-        self.rect = self.image.get_rect(midbottom = (50,300))
+        self.rect = self.image.get_rect(midbottom = (400,300))
 
         self.gravity = 0
-        self.jump = pygame.image.load(str(Path("graphics/pulo.png"))).convert_alpha()
+        self.jump = pygame.image.load(str(Path("graphics/nami_pulo.png"))).convert_alpha()
 
         self.jump_sound = pygame.mixer.Sound(str(Path('audio/jump.mp3')))
         self.jump_sound.set_volume(0.1)
@@ -69,7 +70,9 @@ class Obstacle(pygame.sprite.Sprite):
             snail_2 = pygame.image.load(str(Path("graphics/bombie2.png"))).convert_alpha()
             self.frames = [snail_1, snail_2]
             self.y_pos_baseline = 300
-            self.special = not bool(random.randint(0,6))
+            y_pos = self.y_pos_baseline
+            self.special = [not bool(random.randint(0,6))]
+            if self.special[0]: self.special.append(random.randint(450, 650))
         else:
             fly_1 = pygame.image.load(str(Path('graphics/miney.png'))).convert_alpha()
             fly_2 = pygame.image.load(str(Path('graphics/miney2.png'))).convert_alpha()
@@ -77,16 +80,17 @@ class Obstacle(pygame.sprite.Sprite):
             fly_4 = pygame.image.load(str(Path('graphics/miney4.png'))).convert_alpha()
             self.frames = [fly_1, fly_2, fly_3, fly_4]
             self.y_pos_baseline = 201
+            y_pos = self.y_pos_baseline - random.randint(-15, 50)
             self.up_down = random.choice([1, -1])
-        y_pos = self.y_pos_baseline
         
         self.animation_index = 0
         self.image = self.frames[self.animation_index]
-        self.rect = self.image.get_rect(bottomright=(random.randint(900, 1300), y_pos))
+        self.rect = self.image.get_rect(bottomright=(random.randint(800, 1500), y_pos))
+        # self.rect = self.image.get_rect(bottomright=(random.randint(900, 1300), y_pos))
 
     def animation_state(self):
         if self.type:
-            if self.special:
+            if self.special[0]:
                 self.image=self.frames[1]
             return
         else:
@@ -98,8 +102,8 @@ class Obstacle(pygame.sprite.Sprite):
     def update(self):
         self.animation_state()
         current_vel = obstacle_vel if obstacle_vel < obstacle_max_vel else obstacle_max_vel
-        if self.type and self.special and self.rect.x < 550 + random.randint(-100, 100):
-            current_vel *= 2.5
+        if self.type and self.special[0] and self.rect.x < self.special[1]:
+            current_vel *= 2.1
         self.rect.x -= current_vel
         if self.type:
             pass
@@ -130,7 +134,7 @@ def display_jumps():
     jumps_rect = jumps_surf.get_rect(midright = (725, 50))
     screen.blit(jumps_surf, jumps_rect)
 
-    difficulty_surf = count_font.render(f'{difficulty_name[difficulty]}', True, third_color)
+    difficulty_surf = count_font.render(f'{difficulty.upper()}', True, third_color)
     difficulty_rect = difficulty_surf.get_rect(midleft = (50, 50))
     screen.blit(difficulty_surf, difficulty_rect)
 
@@ -139,11 +143,17 @@ def count_jump():
     jumps += 1
 
 def collision_sprites():
-    if pygame.sprite.spritecollide(player.sprite, obstacle_group, False):
+    if pygame.sprite.spritecollide(player.sprite, obstacle_group, False, pygame.sprite.collide_mask):
         return True
-    else:
-        return False
+    return False
     
+def show_highscore_list():
+    easy_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["easy"] if score[0] and score[1]])
+    normal_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["normal"] if score[0] and score[1]])
+    hard_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["hard"] if score[0] and score[1]])
+    output = 'Easy:\n' + easy_output + '\nNormal:\n' + normal_output + '\nHard:\n' + hard_output
+    messagebox.showinfo(title='Highscore', message=output)
+
 def settings():  
     def update_entries():
         entry_obstacle_start_vel.delete(0, 'end')
@@ -155,7 +165,7 @@ def settings():
         entry_obstacle_max_vel.insert(0, obstacle_max_vel)
 
     def update_difficulty():
-        var_difficulty.set(difficulty)
+        var_difficulty.set(difficulty_name.index(difficulty))
 
     def set_settings():
         global obstacle_start_vel, obstacle_acel, obstacle_max_vel
@@ -177,7 +187,7 @@ def settings():
         obstacle_acel = 0.003
         obstacle_start_vel = 4
         obstacle_max_vel = 16
-        difficulty = 1
+        difficulty = "normal"
 
         gamedata['datasettings']['obstacle_start_vel'] = obstacle_start_vel
         gamedata['datasettings']['obstacle_acel'] = obstacle_acel
@@ -192,7 +202,9 @@ def settings():
     
     def reset_highscore():
         global gamedata
-        gamedata['highscore'] = [[0, '', 1]]
+        gamedata['highscore'] = {'easy': [[0, '']],
+                                 'normal': [[0, '']],
+                                 'hard': [[0, '']]}
         messagebox.showinfo(title='Highscore', message='Highscores resetados!')
 
     def selectsong():
@@ -217,7 +229,7 @@ def settings():
 
     def change_difficulty():
         global difficulty
-        difficulty = int(var_difficulty.get())
+        difficulty = difficulty_name[int(var_difficulty.get())]
         gamedata["difficulty"] = difficulty
 
 
@@ -259,7 +271,7 @@ def settings():
     difficulty_button1 = Radiobutton(frame_difficulty, text='Easy', variable=var_difficulty, value=0, command=change_difficulty)
     difficulty_button2 = Radiobutton(frame_difficulty, text='Normal', variable=var_difficulty, value=1, command=change_difficulty)
     difficulty_button3 = Radiobutton(frame_difficulty, text='Hard', variable=var_difficulty, value=2, command=change_difficulty)
-    var_difficulty.set(difficulty)
+    var_difficulty.set(difficulty_name.index(difficulty))
     
     label_difficulty.pack(side='left')
     difficulty_button1.pack(side='left')
@@ -331,17 +343,22 @@ third_color = (200, 254, 254)
 setts = pygame.image.load(str(Path('graphics/setts.png'))).convert_alpha()
 setts_rect = setts.get_rect(topleft=(715, 320))
 
+highscore_icon = pygame.image.load(str(Path('graphics/highscore.png'))).convert_alpha()
+highscore_icon_rect = highscore_icon.get_rect(topright=(85, 320))
+
 game_active = False
 start_time = 0
 
-gamedata = {'highscore':[[0, '', 1]],
+gamedata = {'highscore':{'easy': [[0, '']],
+                         'normal': [[0, '']],
+                         'hard': [[0, '']]},
             'datasettings':{
                 'obstacle_start_vel': 4,
                 'obstacle_acel': 0.003,
                 'obstacle_max_vel': 16},
-            'music': 0,
+            'music': 1,
             'volume': 3,
-            'difficulty': 1
+            'difficulty': "normal"
             }
 songslist = [str(Path('audio/Street Race at Dawn.mp3')),
             str(Path('audio/Gathering the Dew.mp3')),
@@ -355,7 +372,6 @@ sky_surf = pygame.image.load(str(Path('graphics/Sky.png'))).convert()
 ground_surf = pygame.image.load(str(Path('graphics/ground_move.png'))).convert()
 ground_surf2 = pygame.image.load(str(Path('graphics/ground_move.png'))).convert()
 ground_cord = 0
-difficulty_name = ['EASY', 'NORMAL', 'HARD']
 
 jumps = 0
 just_start = True
@@ -372,6 +388,7 @@ obstacle_start_vel = gamedata['datasettings']['obstacle_start_vel']
 obstacle_acel = gamedata['datasettings']['obstacle_acel']
 obstacle_max_vel = gamedata['datasettings']['obstacle_max_vel']
 difficulty = gamedata['difficulty']
+difficulty_name = ['easy', 'normal', 'hard']
 
 bgMusic = [path for path in songslist if path]
 
@@ -409,10 +426,10 @@ while True:
             # Type == True: Snail
             # Type == False: Fly
             obstacle_group.add(Obstacle(enemy_value:= random.randint(0, odd_enemy)))
-            if difficulty > 0: 
+            if difficulty_name.index(difficulty) > 0: 
                 if enemy_value: obstacle_group.add(Obstacle(enemy_value:= random.randint(0,odd_enemy)))
                 else: obstacle_group.add(Obstacle(1))
-            if difficulty > 1:
+            if difficulty_name.index(difficulty) > 1:
                 obstacle_group.add(Obstacle(enemy_value:= random.randint(0,odd_enemy)))
             if obstacle_vel < 24: pygame.time.set_timer(obstacle_timer, start_tick - int(obstacle_vel) * 70)
             else: pygame.time.set_timer(obstacle_timer, start_tick - 24 * 70)
@@ -430,51 +447,55 @@ while True:
         display_score()
         display_jumps()
         
+        player.draw(screen)
+        player.update()
+        
+        obstacle_group.draw(screen)
+        obstacle_group.update()
+
         if collision_sprites():
             ground_cord=0
             game_active = False
             current_score = pygame.time.get_ticks() - start_time
-            if current_score > gamedata['highscore'][0][0]:
+            current_difficulty = difficulty
+            if current_score > gamedata['highscore'][difficulty][0][0]:
                 player_name = simpledialog.askstring('HIGHSCORE', '\tDigite o seu nome (Até 10 caracteres)\t')
                 if not player_name: player_name = ''
             else:
                 player_name = ''
-            gamedata['highscore'].append([current_score, player_name, difficulty])
-            gamedata['highscore'] = sorted(gamedata['highscore'], key=operator.itemgetter(0), reverse=True)
+            gamedata['highscore'][difficulty].append([current_score, player_name])
+            gamedata['highscore'][difficulty] = sorted(gamedata['highscore'][difficulty], key=operator.itemgetter(0), reverse=True)
             jumps = 0
             obstacle_group.empty()
             player.empty()
             obstacle_vel = obstacle_start_vel
             just_start = False
 
-        player.draw(screen)
-        player.update()
-
-        obstacle_group.draw(screen)
-        obstacle_group.update()
 
     else:
         
         player.add(Player())
         if just_start:
             screen.fill(main_color)
-            
-            screen.blit(pygame.image.load(str(Path("graphics/stand.png"))).convert_alpha(), (31,217))
+            screen.blit(pygame.image.load(str(Path("graphics/nami_stand.png"))).convert_alpha(), (381,217))
             start_surf = main_font.render('PRESS ENTER TO START', True, second_color)
-            start_rect = start_surf.get_rect(center = (400, 200))
+            start_rect = start_surf.get_rect(center = (400, 150))
             screen.blit(start_surf, start_rect)
 
             screen.blit(setts, setts_rect)
             if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 settings()
+            screen.blit(highscore_icon, highscore_icon_rect)
+            if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                show_highscore_list()
         else:
             screen.fill(main_color)
-            if gamedata["highscore"][0][0] == current_score: newrecord = '!!!'
+            if gamedata["highscore"][current_difficulty][0][0] == current_score: newrecord = '!!!'
             else: newrecord = ''
             yourscore_surf = main_font.render(f'YOUR SCORE: {current_score/1000:0.1f} {newrecord}', True, second_color)
             yourscore_rect = yourscore_surf.get_rect(center = (400, 150))
             highscore_surf = third_font.render(
-                f'HIGHSCORE: {difficulty_name[gamedata["highscore"][0][2]]} {gamedata["highscore"][0][0]/1000:0.1f} {gamedata["highscore"][0][1].upper()[:10]}' if gamedata["highscore"][0][0] else '',
+                f'HIGHSCORE: {current_difficulty.upper()} {gamedata["highscore"][current_difficulty][0][0]/1000:0.1f} {gamedata['highscore'][current_difficulty][0][1].upper()[:10]}' if gamedata['highscore'][current_difficulty][0][0] else '',
                 True, second_color)
             highscore_rect = highscore_surf.get_rect(center = (400, 250))
             screen.blit(highscore_surf, highscore_rect)
@@ -483,6 +504,10 @@ while True:
             screen.blit(setts, setts_rect)
             if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 settings()
+            screen.blit(highscore_icon, highscore_icon_rect)
+            if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                show_highscore_list()
+            
         obstacle_vel = obstacle_start_vel
     
     pygame.display.update()
