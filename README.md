@@ -1,6 +1,6 @@
-# Teudongi Runner
+# Nami Runner
 
-Teudongi Runner é um jogo estilo running game desenvolvido com Pygame e Tkinter com base no tutorial [The ultimate introduction to Pygame](https://www.youtube.com/watch?v=AY9MnQ4x3zk) do canal Clear Code. O objetivo do jogo é correr pelo máximo de tempo possível, desviando dos inimigos e tentando alcançar a maior pontuação.
+Nami Runner é um jogo estilo running game desenvolvido com Pygame e Tkinter com base no tutorial [The ultimate introduction to Pygame](https://www.youtube.com/watch?v=AY9MnQ4x3zk) do canal Clear Code. O objetivo do jogo é correr pelo máximo de tempo possível, desviando dos inimigos e tentando alcançar a maior pontuação.
 
 ## Características
 
@@ -14,10 +14,10 @@ Teudongi Runner é um jogo estilo running game desenvolvido com Pygame e Tkinter
 ![Gameplay](screenshots/easy.png)
 ![Gameplay](screenshots/normal.png)
 ![Gameplay](screenshots/hard.png)
-*Exemplo de gameplay do Teudongi Runner*
+*Exemplo de gameplay do Nami Runner*
 
 ![Highscore](screenshots/highscore.png)
-*Tela de highscore do Teudongi Runner*
+*Tela de highscore do Nami Runner*
 
 ## Controles
 
