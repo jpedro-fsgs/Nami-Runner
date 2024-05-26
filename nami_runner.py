@@ -169,9 +169,14 @@ def settings():
 
     def set_settings():
         global obstacle_start_vel, obstacle_acel, obstacle_max_vel
-        obstacle_start_vel = int(entry_obstacle_start_vel.get())
-        obstacle_acel = float(entry_obstacle_acel.get())
-        obstacle_max_vel = int(entry_obstacle_max_vel.get())
+        try:
+            obstacle_start_vel = int(entry_obstacle_start_vel.get())
+            obstacle_acel = float(entry_obstacle_acel.get())
+            obstacle_max_vel = int(entry_obstacle_max_vel.get())
+        except ValueError:
+            messagebox.showerror(title='Parâmetros Inválidos', message='Parâmetros Inválidos! Os Parâmetros não foram atualizados.')
+            update_entries()
+            return
         
         gamedata['datasettings']['obstacle_start_vel'] = obstacle_start_vel
         gamedata['datasettings']['obstacle_acel'] = obstacle_acel
@@ -259,7 +264,7 @@ def settings():
     entry_obstacle_max_vel.grid(row=3,column=1, padx=5, pady=5)
 
     
-    button_confirm.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
+    button_confirm.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
     
     update_entries()
 
