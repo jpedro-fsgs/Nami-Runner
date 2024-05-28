@@ -148,10 +148,14 @@ def collision_sprites():
     return False
     
 def show_highscore_list():
+    output= ''
     easy_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["easy"] if score[0] and score[1]])
     normal_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["normal"] if score[0] and score[1]])
     hard_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["hard"] if score[0] and score[1]])
-    output = 'Easy:\n' + easy_output + '\nNormal:\n' + normal_output + '\nHard:\n' + hard_output
+    if easy_output: output+= 'Easy:\n' + easy_output
+    if normal_output: output+= '\nNormal:\n' + normal_output
+    if hard_output: output+= '\nHard:\n' + hard_output
+    if not output: output = 'Vazio'
     messagebox.showinfo(title='Highscore', message=output)
 
 def settings():  
@@ -227,7 +231,7 @@ def settings():
             current_song.set_volume(slider_value.get()/10)
             gamedata['music'] = var.get()
 
-    def change_volume(self):
+    def change_volume():
         if var.get() >= len(bgMusic): return 0
         current_song.set_volume(slider_value.get()/10)
         gamedata["volume"] = slider_value.get()
@@ -331,7 +335,7 @@ pygame.joystick.init()
 joysticks = []
 
 screen = pygame.display.set_mode((800,400))
-pygame.display.set_caption('Teudongi Runner')
+pygame.display.set_caption('Nami Runner')
 icon = pygame.image.load(str(Path(random.choice(['graphics/miney.png', 'graphics/bombie.png']))))
 pygame.display.set_icon(icon)
 clock = pygame.time.Clock()
