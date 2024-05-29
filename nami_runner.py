@@ -2,7 +2,7 @@ import pygame
 import random
 from sys import exit
 import json
-from tkinter import Tk, Label, Frame, IntVar, simpledialog, messagebox
+from tkinter import DoubleVar, Tk, Label, Frame, IntVar, simpledialog, messagebox
 from tkinter.ttk import Entry, Button, Radiobutton, Scale
 import operator
 from pathlib import Path
@@ -228,13 +228,13 @@ def settings():
             current_song
             current_song=pygame.mixer.Sound(bgMusic[var.get()])
             current_song.play(-1)
-            current_song.set_volume(slider_value.get()/10)
+            current_song.set_volume(slider_value.get())
             gamedata['music'] = var.get()
 
-    def change_volume():
+    def change_volume(volume):
         if var.get() >= len(bgMusic): return 0
-        current_song.set_volume(slider_value.get()/10)
-        gamedata["volume"] = slider_value.get()
+        current_song.set_volume(float(volume))
+        gamedata["volume"] = volume
 
     def change_difficulty():
         global difficulty
@@ -318,11 +318,11 @@ def settings():
     songbutton3.pack(anchor='w')
     songbutton4.pack(anchor='w')
 
-    slider_value = IntVar()
+    slider_value = DoubleVar()
     slider_value.set(gamedata["volume"])
     
     volumelabel = Label(framesongs, text='Volume', pady=10)
-    volume = Scale(framesongs, from_=0, to=10, orient='horizontal', variable=slider_value, command=change_volume)
+    volume = Scale(framesongs, from_=0, to=1, orient='horizontal', variable=slider_value, command=change_volume)
     volumelabel.pack()
     volume.pack()
 
@@ -404,7 +404,7 @@ bgMusic = [path for path in songslist if path]
 if gamedata['music'] < len(bgMusic):
     current_song=pygame.mixer.Sound(bgMusic[gamedata['music']])
     current_song.play(-1)
-    current_song.set_volume(gamedata['volume']/10)
+    current_song.set_volume(float(gamedata['volume']))
 else:
     current_song = None
 
