@@ -28,7 +28,7 @@ class Player(pygame.sprite.Sprite):
 
     def player_input(self):
         keys = pygame.key.get_pressed()
-        if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w] or (joysticks and (joysticks[0].get_button(0) or joysticks[0].get_hat(0)[1] > 0))) and self.rect.bottom >= 300:
+        if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w] or (joysticks and (joysticks[0].get_button(0) or joysticks[0].get_hat(0)[1] > 0)))and self.rect.bottom >= 300:
             self.gravity = -20
             self.jump_sound.play()
 
@@ -71,7 +71,7 @@ class Obstacle(pygame.sprite.Sprite):
             self.frames = [snail_1, snail_2]
             self.y_pos_baseline = 300
             y_pos = self.y_pos_baseline
-            self.special = [not bool(random.randint(0,6))]
+            self.special = [not bool(random.randint(0,6))] #0: vermelho >=1: normal
             if self.special[0]: self.special.append(random.randint(450, 650))
         else:
             fly_1 = pygame.image.load(str(Path('graphics/miney.png'))).convert_alpha()
@@ -80,6 +80,11 @@ class Obstacle(pygame.sprite.Sprite):
             fly_4 = pygame.image.load(str(Path('graphics/miney4.png'))).convert_alpha()
             self.frames = [fly_1, fly_2, fly_3, fly_4]
             self.y_pos_baseline = 201
+            self.special = [random.randint(0,8)] #0: black 1: fast >=2: normal
+            if self.special[0] <= 2: 
+                self.special.append(random.randint(550, 700))
+                if self.special[0] == 0:
+                    self.release_time = 100
             y_pos = self.y_pos_baseline - random.randint(-15, 50)
             self.up_down = random.choice([1, -1])
         
@@ -93,9 +98,17 @@ class Obstacle(pygame.sprite.Sprite):
             if self.special[0]:
                 self.image=self.frames[1]
             return
-        else:
-            self.animation_index += 0.05
-        if int(self.animation_index) >= len(self.frames): 
+        if self.special[0] == 1:
+            self.image=self.frames[2]
+            return
+        if self.special[0] == 0:
+            if self.rect.x < self.special[1] and self.release_time > 0:
+                self.release_time -=1
+                self.animation_index += 0.1
+            if self.release_time <= 0:
+                self.image = self.frames[3]
+                return
+        if int(self.animation_index) >= 2: 
             self.animation_index = 0
         self.image = self.frames[int(self.animation_index)]
 
@@ -104,6 +117,19 @@ class Obstacle(pygame.sprite.Sprite):
         current_vel = obstacle_vel if obstacle_vel < obstacle_max_vel else obstacle_max_vel
         if self.type and self.special[0] and self.rect.x < self.special[1]:
             current_vel *= 2.1
+        
+        if not self.type and self.special[0] == 1:
+            current_vel *= 1.4
+
+        if not self.type: 
+            if self.special[0] == 0: 
+                if self.rect.x < self.special[1]:
+                    current_vel = 0
+                if self.release_time <= 0:
+                    current_vel = obstacle_vel if obstacle_vel < obstacle_max_vel else obstacle_max_vel
+                    self.up_down = 0
+                    current_vel *= 2
+
         self.rect.x -= current_vel
         if self.type:
             pass
@@ -147,26 +173,40 @@ def collision_sprites():
         return True
     return False
     
-def show_highscore_list():
-    output= ''
-    easy_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["easy"] if score[0] and score[1]])
-    normal_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["normal"] if score[0] and score[1]])
-    hard_output = '\n'.join([f'{score[0]} {score[1]}'for score in gamedata["highscore"]["hard"] if score[0] and score[1]])
-    if easy_output: output+= 'Easy:\n' + easy_output
-    if normal_output: output+= '\nNormal:\n' + normal_output
-    if hard_output: output+= '\nHard:\n' + hard_output
-    if not output: output = 'Vazio'
-    messagebox.showinfo(title='Highscore', message=output)
+def show_highscore_list(diff):
+    return[f'{score[0]/1000:0.1f} {score[1].lower()[:10]}'for score in gamedata["highscore"][diff] if score[0]][:5]
+
+
+def highscore_screen(screen):
+    
+    screen.fill(third_color)
+    # if gamedata["highscore"][current_difficulty][0][0] == current_score: newrecord = '!!!'
+    # else: newrecord = ''
+    highscore_title_surf = main_font.render('HIGHSCORES', True, second_color)
+    highscore_title_rect = highscore_title_surf.get_rect(center = (400, 150))
+    screen.blit(highscore_title_surf, highscore_title_rect)
+    # screen.blit(yourscore_surf, yourscore_rect)
+
+    screen.blit(setts, setts_rect)
+    if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+        return False
+    return True
+    # screen.blit(highscore_icon, highscore_icon_rect)
+    # if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+        # show_highscore_list()
+        # screen.fill(main_color)
 
 def settings():  
     def update_entries():
         entry_obstacle_start_vel.delete(0, 'end')
         entry_obstacle_acel.delete(0, 'end')
         entry_obstacle_max_vel.delete(0, 'end')
+        entry_nome.delete(0, 'end')
 
         entry_obstacle_start_vel.insert(0, obstacle_start_vel)
         entry_obstacle_acel.insert(0, obstacle_acel)
         entry_obstacle_max_vel.insert(0, obstacle_max_vel)
+        entry_nome.insert(0, player_name)
 
     def update_difficulty():
         var_difficulty.set(difficulty_name.index(difficulty))
@@ -241,10 +281,26 @@ def settings():
         difficulty = difficulty_name[int(var_difficulty.get())]
         gamedata["difficulty"] = difficulty
 
+    def change_name():
+        global player_name, gamedata
+        player_name = entry_nome.get()
+        gamedata["name"] = player_name
+        update_entries()
+        messagebox.showinfo(title='Nome', message=f'Nome alterado para {player_name}!')
 
     janela = Tk()
     janela.title('Settings')
     janela.iconbitmap(str(Path("graphics/setts_icon.ico")))
+    
+    frame_nome = Frame(janela, bd=15)
+    label_nome = Label(frame_nome, text=" Alterar Nome:")
+    entry_nome = Entry(frame_nome)
+    button_nome = Button(frame_nome, text="Inserir Nome", command=change_name)
+
+    frame_nome.pack()
+    label_nome.pack(padx=5, pady=5)
+    entry_nome.pack(padx=5, pady=5)
+    button_nome.pack(padx=5, pady=5)
     
     framevel = Frame(janela, bd=15)
     framevel.pack()
@@ -307,7 +363,7 @@ def settings():
     var = IntVar()
 
     songbutton1 = Radiobutton(framesongs, text='Street Race at Dawn', variable=var, value=0, command=selectsong)
-    songbutton2 = Radiobutton(framesongs, text='Gathering the Dew', variable=var, value=1, command=selectsong)
+    songbutton2 = Radiobutton(framesongs, text='Dew Gathering', variable=var, value=1, command=selectsong)
     songbutton3 = Radiobutton(framesongs, text='Cryptic Puzzle', variable=var, value=2, command=selectsong)
     songbutton4 = Radiobutton(framesongs, text="None", variable=var, value=3, command=selectsong)
 
@@ -328,8 +384,6 @@ def settings():
 
     janela.mainloop()
 
-
-
 pygame.init()
 pygame.joystick.init()
 joysticks = []
@@ -348,9 +402,17 @@ count_font = pygame.font.Font(fonte2, 35)
 main_color = (230, 126, 163)
 second_color = (254, 254, 254)
 third_color = (200, 254, 254)
+highscore_title_font = pygame.font.Font(fonte1, 50)
+highscore_diff_titles_font = pygame.font.Font(fonte2, 40)
+highscore_results_font = pygame.font.Font(fonte2, 30)
+player_name_font = highscore_results_font = pygame.font.Font(fonte2, 20)
 
 setts = pygame.image.load(str(Path('graphics/setts.png'))).convert_alpha()
 setts_rect = setts.get_rect(topleft=(715, 320))
+
+arrow = pygame.image.load(str(Path('graphics/arrow.png'))).convert_alpha()
+arrow_rect = arrow.get_rect(bottomright=(85, 80))
+
 
 highscore_icon = pygame.image.load(str(Path('graphics/highscore.png'))).convert_alpha()
 highscore_icon_rect = highscore_icon.get_rect(topright=(85, 320))
@@ -366,11 +428,12 @@ gamedata = {'highscore':{'easy': [[0, '']],
                 'obstacle_acel': 0.003,
                 'obstacle_max_vel': 16},
             'music': 1,
-            'volume': 3,
-            'difficulty': "normal"
+            'volume': 0.3,
+            'difficulty': "normal",
+            'name': ''
             }
 songslist = [str(Path('audio/Street Race at Dawn.mp3')),
-            str(Path('audio/Gathering the Dew.mp3')),
+            str(Path('audio/Dew Gathering.mp3')),
             str(Path('audio/Cryptic Puzzle.mp3'))]
 
 #Groups
@@ -384,7 +447,9 @@ ground_cord = 0
 
 jumps = 0
 just_start = True
+in_highscore = False
 odd_enemy = 2
+
 
 if not Path('gamedata.json').exists():
     with open('gamedata.json', 'w') as hs_file:
@@ -392,6 +457,13 @@ if not Path('gamedata.json').exists():
 
 with open(Path('gamedata.json'), 'r') as hs_file:
     gamedata = json.load(hs_file)
+
+player_name = gamedata["name"]
+if not player_name:
+    player_name = simpledialog.askstring('Nome', '\tDigite o seu nome (Até 10 caracteres)\t')
+    if not player_name: player_name = ''
+    gamedata["name"] = player_name
+
 
 obstacle_start_vel = gamedata['datasettings']['obstacle_start_vel']
 obstacle_acel = gamedata['datasettings']['obstacle_acel']
@@ -427,7 +499,7 @@ while True:
             joysticks.clear()
             joysticks.append(joy)
 
-        if not game_active and  ((event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN) or (joysticks and joysticks[0].get_button(7))):
+        if not in_highscore and not game_active and  ((event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN) or (joysticks and joysticks[0].get_button(7))):
             start_time = pygame.time.get_ticks()
             game_active = True
 
@@ -443,7 +515,7 @@ while True:
             if obstacle_vel < 24: pygame.time.set_timer(obstacle_timer, start_tick - int(obstacle_vel) * 70)
             else: pygame.time.set_timer(obstacle_timer, start_tick - 24 * 70)
         
-    if game_active:
+    if game_active and not in_highscore:
 
         speed_up()
 
@@ -467,11 +539,6 @@ while True:
             game_active = False
             current_score = pygame.time.get_ticks() - start_time
             current_difficulty = difficulty
-            if current_score > gamedata['highscore'][difficulty][0][0]:
-                player_name = simpledialog.askstring('HIGHSCORE', '\tDigite o seu nome (Até 10 caracteres)\t')
-                if not player_name: player_name = ''
-            else:
-                player_name = ''
             gamedata['highscore'][difficulty].append([current_score, player_name])
             gamedata['highscore'][difficulty] = sorted(gamedata['highscore'][difficulty], key=operator.itemgetter(0), reverse=True)
             jumps = 0
@@ -483,39 +550,98 @@ while True:
 
     else:
         
-        player.add(Player())
-        if just_start:
+        if in_highscore:
             screen.fill(main_color)
-            screen.blit(pygame.image.load(str(Path("graphics/nami_stand.png"))).convert_alpha(), (381,217))
-            start_surf = main_font.render('PRESS ENTER TO START', True, second_color)
-            start_rect = start_surf.get_rect(center = (400, 150))
-            screen.blit(start_surf, start_rect)
+            highscore_title_surf = highscore_title_font.render('HIGHSCORES', True, second_color)
+            highscore_title_rect = highscore_title_surf.get_rect(center = (400, 50))
+            
+            easy_surf = highscore_diff_titles_font.render('EASY', True, second_color)
+            easy_rect = easy_surf.get_rect(center = (150, 120))
+            
+            normal_surf = highscore_diff_titles_font.render('NORMAL', True, second_color)
+            normal_rect = normal_surf.get_rect(center = (400, 120))
+            
+            hard_surf = highscore_diff_titles_font.render('HARD', True, second_color)
+            hard_rect = hard_surf.get_rect(center = (650, 120))
+            
+            cord = 190
+            for result in show_highscore_list("easy"):
+                easy_result_surf = highscore_results_font.render(result, True, second_color)
+                easy_result_rect = easy_result_surf.get_rect(center = (150, cord))
+                screen.blit(easy_result_surf, easy_result_rect)
+                cord += 40
+                
+            cord = 190
+            for result in show_highscore_list("normal"):
+                normal_result_surf = highscore_results_font.render(result, True, second_color)
+                normal_result_rect = normal_result_surf.get_rect(center = (400, cord))
+                screen.blit(normal_result_surf, normal_result_rect)
+                cord += 40
+            
+            cord = 190
+            for result in show_highscore_list("hard"):
+                hard_result_surf = highscore_results_font.render(result, True, second_color)
+                hard_result_rect = hard_result_surf.get_rect(center = (650, cord))
+                screen.blit(hard_result_surf, hard_result_rect)
+                cord += 40
 
-            screen.blit(setts, setts_rect)
-            if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-                settings()
-            screen.blit(highscore_icon, highscore_icon_rect)
-            if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-                show_highscore_list()
+            screen.blit(arrow, arrow_rect)
+            screen.blit(highscore_title_surf, highscore_title_rect)
+            screen.blit(easy_surf, easy_rect)
+            screen.blit(normal_surf, normal_rect)
+            screen.blit(hard_surf, hard_rect)
+
+            if arrow_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                in_highscore = False
         else:
-            screen.fill(main_color)
-            if gamedata["highscore"][current_difficulty][0][0] == current_score: newrecord = '!!!'
-            else: newrecord = ''
-            yourscore_surf = main_font.render(f'YOUR SCORE: {current_score/1000:0.1f} {newrecord}', True, second_color)
-            yourscore_rect = yourscore_surf.get_rect(center = (400, 150))
-            highscore_surf = third_font.render(
-                f'HIGHSCORE: {current_difficulty.upper()} {gamedata["highscore"][current_difficulty][0][0]/1000:0.1f} {gamedata['highscore'][current_difficulty][0][1].upper()[:10]}' if gamedata['highscore'][current_difficulty][0][0] else '',
-                True, second_color)
-            highscore_rect = highscore_surf.get_rect(center = (400, 250))
-            screen.blit(highscore_surf, highscore_rect)
-            screen.blit(yourscore_surf, yourscore_rect)
+            player.add(Player())
+            if just_start:
+                screen.fill(main_color)
+                screen.blit(pygame.image.load(str(Path("graphics/nami_stand.png"))).convert_alpha(), (381,217))
+                
+                player_name_surf = player_name_font.render(f'{player_name[:10].lower()}', True, second_color)
+                player_name_rect = player_name_surf.get_rect(midright = (785, 27))
+                screen.blit(player_name_surf, player_name_rect)
+                
+                start_surf = main_font.render('PRESS ENTER TO START', True, second_color)
+                start_rect = start_surf.get_rect(center = (400, 150))
+                screen.blit(start_surf, start_rect)
 
-            screen.blit(setts, setts_rect)
-            if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-                settings()
-            screen.blit(highscore_icon, highscore_icon_rect)
-            if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-                show_highscore_list()
+                screen.blit(setts, setts_rect)
+                if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                    settings()
+                screen.blit(highscore_icon, highscore_icon_rect)
+                if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                    in_highscore = True
+            else:
+                screen.fill(main_color)
+                if gamedata["highscore"][current_difficulty][0][0] == current_score: newrecord = '!!!'
+                else: newrecord = ''
+                
+                player_name_surf = player_name_font.render(f'{player_name[:10].lower()}', True, second_color)
+                player_name_rect = player_name_surf.get_rect(midright = (785, 27))
+                screen.blit(player_name_surf, player_name_rect)
+                
+                yourscore_surf = main_font.render(f'YOUR SCORE: {current_score/1000:0.1f} {newrecord}', True, second_color)
+                yourscore_rect = yourscore_surf.get_rect(center = (400, 125))
+
+                highscore_surf1 = third_font.render('HIGHSCORE:', True, second_color)
+                highscore_surf2 = third_font.render(
+                    f'{current_difficulty.upper()} {gamedata["highscore"][current_difficulty][0][0]/1000:0.1f} {gamedata['highscore'][current_difficulty][0][1].upper()[:10]}' if gamedata['highscore'][current_difficulty][0][0] else '',
+                    True, second_color)
+                highscore_rect1 = highscore_surf1.get_rect(center = (400, 225))
+                highscore_rect2 = highscore_surf2.get_rect(center = (400, 275))
+                screen.blit(highscore_surf1, highscore_rect1)
+                screen.blit(highscore_surf2, highscore_rect2)
+                screen.blit(yourscore_surf, yourscore_rect)
+
+                screen.blit(setts, setts_rect)
+                if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                    settings()
+                screen.blit(highscore_icon, highscore_icon_rect)
+                if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                    in_highscore = True
+                
             
         obstacle_vel = obstacle_start_vel
     
