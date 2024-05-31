@@ -419,6 +419,7 @@ highscore_icon_rect = highscore_icon.get_rect(topright=(85, 320))
 
 game_active = False
 start_time = 0
+restart = False
 
 gamedata = {'highscore':{'easy': [[0, '']],
                          'normal': [[0, '']],
@@ -503,6 +504,9 @@ while True:
             start_time = pygame.time.get_ticks()
             game_active = True
 
+        # if (event.type == pygame.KEYDOWN and event.key == pygame.K_x):
+        #     restart = True
+
         if game_active and event.type == obstacle_timer and pygame.time.get_ticks() - 1000 > start_time:
             # Type == True: Snail
             # Type == False: Fly
@@ -535,6 +539,7 @@ while True:
         obstacle_group.update()
 
         if collision_sprites():
+            restart = False
             ground_cord=0
             game_active = False
             current_score = pygame.time.get_ticks() - start_time
