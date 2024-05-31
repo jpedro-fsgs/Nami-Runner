@@ -9,6 +9,9 @@ Nami Runner é um jogo estilo running game desenvolvido com Pygame e Tkinter com
 - **Registro de Highscores**: Registre suas melhores pontuações por nível de dificuldade.
 - **Trilha Sonora**: Escolha entre três músicas autorais para ouvir enquanto joga.
 
+## Gameplay
+![Gameplay](screenshots/gameplay.gif)
+
 ## Screenshots
 
 ![Gameplay](screenshots/easy.png)
@@ -17,6 +20,7 @@ Nami Runner é um jogo estilo running game desenvolvido com Pygame e Tkinter com
 *Exemplo de gameplay do Nami Runner*
 
 ![Highscore](screenshots/highscore.png)
+![Highscore](screenshots/highscore_table.png)
 *Tela de highscore do Nami Runner*
 
 ## Controles
@@ -48,7 +52,7 @@ Na tela de configurações, você pode ajustar várias opções do jogo:
 
 - **Seleção de Música**: Escolha entre três músicas autorais para ouvir durante o jogo:
   - **Street Race at Dawn**
-  - **Gathering the Dew**
+  - **Dew Gathering**
   - **Cryptic Puzzle**
   - **None**: Jogue sem música.
 
