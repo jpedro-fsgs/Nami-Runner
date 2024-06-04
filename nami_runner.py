@@ -80,7 +80,7 @@ class Obstacle(pygame.sprite.Sprite):
             fly_4 = pygame.image.load(str(Path('graphics/miney4.png'))).convert_alpha()
             self.frames = [fly_1, fly_2, fly_3, fly_4]
             self.y_pos_baseline = 201
-            self.special = [random.randint(0,8)] #0: black 1: fast >=2: normal
+            self.special = [random.randint(0,6)] #0: black 1: fast >=2: normal
             if self.special[0] <= 2: 
                 self.special.append(random.randint(550, 700))
                 if self.special[0] == 0:
@@ -233,7 +233,7 @@ def settings():
 
     def reset():
         global obstacle_start_vel, obstacle_acel, obstacle_max_vel, difficulty
-        obstacle_acel = 0.003
+        obstacle_acel = 0.002
         obstacle_start_vel = 4
         obstacle_max_vel = 16
         difficulty = "normal"
@@ -426,7 +426,7 @@ gamedata = {'highscore':{'easy': [[0, '']],
                          'hard': [[0, '']]},
             'datasettings':{
                 'obstacle_start_vel': 4,
-                'obstacle_acel': 0.003,
+                'obstacle_acel': 0.002,
                 'obstacle_max_vel': 16},
             'music': 1,
             'volume': 0.3,
