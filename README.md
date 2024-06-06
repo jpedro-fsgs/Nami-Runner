@@ -1,6 +1,6 @@
 # Nami Runner
 
-Nami Runner é um jogo estilo running game desenvolvido com Pygame e Tkinter com base no tutorial [The ultimate introduction to Pygame](https://www.youtube.com/watch?v=AY9MnQ4x3zk) do canal Clear Code. O objetivo do jogo é correr pelo máximo de tempo possível, desviando dos inimigos e tentando alcançar a maior pontuação.
+Nami Runner é um jogo estilo running game desenvolvido em Python com Pygame e Tkinter. O objetivo do jogo é correr pelo máximo de tempo possível, desviando dos inimigos e tentando alcançar a maior pontuação.
 
 ## Características
 

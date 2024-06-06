@@ -11,9 +11,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         
-        self.stand = pygame.image.load(str(Path("graphics/nami_stand.png"))).convert_alpha()
-        layer_walk_1 = pygame.image.load(str(Path("graphics/nami_passo1.png"))).convert_alpha()
-        layer_walk_2 = pygame.image.load(str(Path("graphics/nami_passo2.png"))).convert_alpha()
+        self.stand = pygame.image.load(str(Path(__file__).parent / "graphics/nami_stand.png")).convert_alpha()
+        layer_walk_1 = pygame.image.load(str(Path(__file__).parent / "graphics/nami_passo1.png")).convert_alpha()
+        layer_walk_2 = pygame.image.load(str(Path(__file__).parent / "graphics/nami_passo2.png")).convert_alpha()
         self.walk = [layer_walk_1, layer_walk_2]
         self.index = 0
         
@@ -21,9 +21,9 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(midbottom = (400,300))
 
         self.gravity = 0
-        self.jump = pygame.image.load(str(Path("graphics/nami_pulo.png"))).convert_alpha()
+        self.jump = pygame.image.load(str(Path(__file__).parent / "graphics/nami_pulo.png")).convert_alpha()
 
-        self.jump_sound = pygame.mixer.Sound(str(Path('audio/jump.mp3')))
+        self.jump_sound = pygame.mixer.Sound(str(Path(__file__).parent / 'audio/jump.mp3'))
         self.jump_sound.set_volume(0.1)
 
     def player_input(self):
@@ -66,18 +66,18 @@ class Obstacle(pygame.sprite.Sprite):
 
         self.type = type
         if type:
-            snail_1 = pygame.image.load(str(Path("graphics/bombie.png"))).convert_alpha()
-            snail_2 = pygame.image.load(str(Path("graphics/bombie2.png"))).convert_alpha()
+            snail_1 = pygame.image.load(str(Path(__file__).parent / "graphics/bombie.png")).convert_alpha()
+            snail_2 = pygame.image.load(str(Path(__file__).parent / "graphics/bombie2.png")).convert_alpha()
             self.frames = [snail_1, snail_2]
             self.y_pos_baseline = 300
             y_pos = self.y_pos_baseline
             self.special = [not bool(random.randint(0,6))] #0: vermelho >=1: normal
             if self.special[0]: self.special.append(random.randint(450, 650))
         else:
-            fly_1 = pygame.image.load(str(Path('graphics/miney.png'))).convert_alpha()
-            fly_2 = pygame.image.load(str(Path('graphics/miney2.png'))).convert_alpha()
-            fly_3 = pygame.image.load(str(Path('graphics/miney3.png'))).convert_alpha()
-            fly_4 = pygame.image.load(str(Path('graphics/miney4.png'))).convert_alpha()
+            fly_1 = pygame.image.load(str(Path(__file__).parent / 'graphics/miney.png')).convert_alpha()
+            fly_2 = pygame.image.load(str(Path(__file__).parent / 'graphics/miney2.png')).convert_alpha()
+            fly_3 = pygame.image.load(str(Path(__file__).parent / 'graphics/miney3.png')).convert_alpha()
+            fly_4 = pygame.image.load(str(Path(__file__).parent / 'graphics/miney4.png')).convert_alpha()
             self.frames = [fly_1, fly_2, fly_3, fly_4]
             self.y_pos_baseline = 201
             self.special = [random.randint(0,6)] #0: black 1: fast >=2: normal
@@ -176,26 +176,6 @@ def collision_sprites():
 def show_highscore_list(diff):
     return[f'{score[0]/1000:0.1f} {score[1].lower()[:10]}'for score in gamedata["highscore"][diff] if score[0]][:5]
 
-
-def highscore_screen(screen):
-    
-    screen.fill(third_color)
-    # if gamedata["highscore"][current_difficulty][0][0] == current_score: newrecord = '!!!'
-    # else: newrecord = ''
-    highscore_title_surf = main_font.render('HIGHSCORES', True, second_color)
-    highscore_title_rect = highscore_title_surf.get_rect(center = (400, 150))
-    screen.blit(highscore_title_surf, highscore_title_rect)
-    # screen.blit(yourscore_surf, yourscore_rect)
-
-    screen.blit(setts, setts_rect)
-    if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-        return False
-    return True
-    # screen.blit(highscore_icon, highscore_icon_rect)
-    # if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-        # show_highscore_list()
-        # screen.fill(main_color)
-
 def settings():  
     def update_entries():
         entry_obstacle_start_vel.delete(0, 'end')
@@ -290,7 +270,7 @@ def settings():
 
     janela = Tk()
     janela.title('Settings')
-    janela.iconbitmap(str(Path("graphics/setts_icon.ico")))
+    janela.iconbitmap(str(Path(__file__).parent / "graphics/setts_icon.ico"))
     
     frame_nome = Frame(janela, bd=15)
     label_nome = Label(frame_nome, text=" Alterar Nome:")
@@ -390,11 +370,12 @@ joysticks = []
 
 screen = pygame.display.set_mode((800,400))
 pygame.display.set_caption('Nami Runner')
-icon = pygame.image.load(str(Path(random.choice(['graphics/miney.png', 'graphics/bombie.png']))))
+icon_path = random.choice(['miney.png', 'bombie.png'])
+icon = pygame.image.load(str(Path(__file__).parent / 'graphics' / icon_path))
 pygame.display.set_icon(icon)
 clock = pygame.time.Clock()
-fonte1 = str(Path('font/Poppins-SemiBold.ttf'))
-fonte2 = str(Path('font/Poppins-Light.ttf'))
+fonte1 = str(Path(__file__).parent / 'font/Poppins-SemiBold.ttf')
+fonte2 = str(Path(__file__).parent / 'font/Poppins-Light.ttf')
 main_font = pygame.font.Font(fonte1, 60)
 second_font = pygame.font.Font(fonte2, 50)
 third_font = pygame.font.Font(fonte1, 45)
@@ -407,14 +388,14 @@ highscore_diff_titles_font = pygame.font.Font(fonte2, 40)
 highscore_results_font = pygame.font.Font(fonte2, 30)
 player_name_font = highscore_results_font = pygame.font.Font(fonte2, 20)
 
-setts = pygame.image.load(str(Path('graphics/setts.png'))).convert_alpha()
+setts = pygame.image.load(str(Path(__file__).parent / 'graphics/setts.png')).convert_alpha()
 setts_rect = setts.get_rect(topleft=(715, 320))
 
-arrow = pygame.image.load(str(Path('graphics/arrow.png'))).convert_alpha()
+arrow = pygame.image.load(str(Path(__file__).parent / 'graphics/arrow.png')).convert_alpha()
 arrow_rect = arrow.get_rect(bottomright=(85, 80))
 
 
-highscore_icon = pygame.image.load(str(Path('graphics/highscore.png'))).convert_alpha()
+highscore_icon = pygame.image.load(str(Path(__file__).parent / 'graphics/highscore.png')).convert_alpha()
 highscore_icon_rect = highscore_icon.get_rect(topright=(85, 320))
 
 game_active = False
@@ -433,17 +414,17 @@ gamedata = {'highscore':{'easy': [[0, '']],
             'difficulty': "normal",
             'name': ''
             }
-songslist = [str(Path('audio/Street Race at Dawn.mp3')),
-            str(Path('audio/Dew Gathering.mp3')),
-            str(Path('audio/Cryptic Puzzle.mp3'))]
+songslist = [str(Path(__file__).parent / 'audio/Street Race at Dawn.mp3'),
+            str(Path(__file__).parent / 'audio/Dew Gathering.mp3'),
+            str(Path(__file__).parent / 'audio/Cryptic Puzzle.mp3')]
 
 #Groups
 player = pygame.sprite.GroupSingle()
 obstacle_group = pygame.sprite.Group()
 
-sky_surf = pygame.image.load(str(Path('graphics/Sky.png'))).convert()
-ground_surf = pygame.image.load(str(Path('graphics/ground_move.png'))).convert()
-ground_surf2 = pygame.image.load(str(Path('graphics/ground_move.png'))).convert()
+sky_surf = pygame.image.load(str(Path(__file__).parent / 'graphics/Sky.png')).convert()
+ground_surf = pygame.image.load(str(Path(__file__).parent / 'graphics/ground_move.png')).convert()
+ground_surf2 = pygame.image.load(str(Path(__file__).parent / 'graphics/ground_move.png')).convert()
 ground_cord = 0
 
 jumps = 0
@@ -452,11 +433,11 @@ in_highscore = False
 odd_enemy = 2
 
 
-if not Path('gamedata.json').exists():
+if not Path(Path(__file__).parent / 'gamedata.json').exists():
     with open('gamedata.json', 'w') as hs_file:
                     json.dump(gamedata, hs_file, indent=4)
 
-with open(Path('gamedata.json'), 'r') as hs_file:
+with open(Path(Path(__file__).parent / 'gamedata.json'), 'r') as hs_file:
     gamedata = json.load(hs_file)
 
 player_name = gamedata["name"]
@@ -602,7 +583,7 @@ while True:
             player.add(Player())
             if just_start:
                 screen.fill(main_color)
-                screen.blit(pygame.image.load(str(Path("graphics/nami_stand.png"))).convert_alpha(), (381,217))
+                screen.blit(pygame.image.load(str(Path(__file__).parent / "graphics/nami_stand.png")).convert_alpha(), (381,217))
                 
                 player_name_surf = player_name_font.render(f'{player_name[:10].lower()}', True, second_color)
                 player_name_rect = player_name_surf.get_rect(midright = (785, 27))
