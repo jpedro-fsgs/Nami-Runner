@@ -1,3 +1,4 @@
+import threading
 import pygame
 import random
 from sys import exit
@@ -176,7 +177,15 @@ def collision_sprites():
 def show_highscore_list(diff):
     return[f'{score[0]/1000:0.1f} {score[1].lower()[:10]}'for score in gamedata["highscore"][diff] if score[0]][:5]
 
-def settings():  
+settings_open = False
+def open_settings():
+    if not settings_open:
+        threading.Thread(target=settings, daemon=True).start()
+
+
+def settings():
+    global settings_open
+    settings_open = True
     def update_entries():
         entry_obstacle_start_vel.delete(0, 'end')
         entry_obstacle_acel.delete(0, 'end')
@@ -270,7 +279,10 @@ def settings():
 
     janela = Tk()
     janela.title('Settings')
-    janela.iconbitmap(str(Path(__file__).parent / "graphics/setts_icon.ico"))
+    try:
+        janela.iconbitmap(str(Path(__file__).parent / "graphics/setts_icon.ico"))
+    except:
+        pass
     
     frame_nome = Frame(janela, bd=15)
     label_nome = Label(frame_nome, text=" Alterar Nome:")
@@ -363,6 +375,7 @@ def settings():
     volume.pack()
 
     janela.mainloop()
+    settings_open = False
 
 pygame.init()
 pygame.joystick.init()
@@ -595,7 +608,7 @@ while True:
 
                 screen.blit(setts, setts_rect)
                 if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-                    settings()
+                    open_settings()
                 screen.blit(highscore_icon, highscore_icon_rect)
                 if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                     in_highscore = True
@@ -623,7 +636,7 @@ while True:
 
                 screen.blit(setts, setts_rect)
                 if setts_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-                    settings()
+                    open_settings()
                 screen.blit(highscore_icon, highscore_icon_rect)
                 if highscore_icon_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                     in_highscore = True
